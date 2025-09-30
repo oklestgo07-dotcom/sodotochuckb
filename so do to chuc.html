@@ -15,9 +15,30 @@
         button.icon-btn { background: none; border: none; cursor: pointer; font-size: 20px; padding: 8px; border-radius: 8px; color: #555; transition: all 0.2s; }
         button.icon-btn:hover { color: #1877f2; background: rgba(24, 119, 242, 0.1); }
         .search-container { display: flex; align-items: center; gap: 5px; position: relative; }
-        #searchInput { border: 1px solid #ccc; border-radius: 18px; padding: 8px 15px 8px 35px; font-size: 14px; outline: none; transition: border-color 0.2s; min-width: 250px; }
+        #searchInput { 
+            border: 1px solid #ccc;
+            border-radius: 18px;
+            /* CẬP NHẬT: Thêm padding-right để không bị chữ đè lên nút x */
+            padding: 8px 35px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 250px;
+        }
         #searchInput:focus { border-color: #1877f2; }
         .search-container .fa-search { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; }
+        
+        /* MỚI: CSS cho nút xóa nhanh */
+        #clearSearchBtn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            cursor: pointer;
+            display: none; /* Mặc định ẩn */
+        }
+
         #searchResults { position: absolute; top: calc(100% + 5px); left: 0; background: white; border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1001; width: 100%; max-width: 350px; }
         #searchResults ul { list-style: none; padding: 5px 0; margin: 0; }
         #searchResults li { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
@@ -48,6 +69,7 @@
         <div class="search-container">
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Tìm theo tên hoặc khu vực quản lý...">
+            <i class="fas fa-times" id="clearSearchBtn" title="Xóa"></i>
             <div id="searchResults" style="display: none;"></div>
         </div>
     </div>
@@ -71,18 +93,14 @@
         function createNodeText(d) { if (!d.name && d.short) return d.short; const roleAbbrev = abbrevRole(d.role); if (d.name) return d.name + (roleAbbrev ? "\n(" + roleAbbrev + ")" : ""); return d.short || ""; }
         function createNodeTemplate() { const $ = go.GraphObject.make; return $(go.Node, "Auto", { isTreeExpanded: false, selectionAdornmentTemplate: $(go.Adornment, "Auto", $(go.Shape, "RoundedRectangle", { fill: null, stroke: "#1877f2", strokeWidth: 3 }), $(go.Placeholder)), shadowColor: "#aaaaaa", shadowOffset: new go.Point(2, 2) }, $(go.Shape, "RoundedRectangle", new go.Binding("fill", "color"), { stroke: "#ddd", strokeWidth: 1, minSize: new go.Size(180, 50) }), $(go.TextBlock, { margin: 10, stroke: "white", font: "500 13px Segoe UI, sans-serif", wrap: go.TextBlock.WrapFit, textAlign: "center" }, new go.Binding("text", "", createNodeText))); }
         function loadFromLocal() { const saved = localStorage.getItem("orgChartModel"); if (saved) { try { myDiagram.model = go.Model.fromJson(saved); return true; } catch (e) { console.error("Lỗi tải localStorage:", e); localStorage.removeItem("orgChartModel"); return false; } } return false; }
-
-        // MỚI: Hàm tập trung việc hiển thị popup chi tiết
         function showDetailsModal(d) {
-            if (!d || !d.name) return; // Chỉ hiển thị cho nhân sự có tên
-
+            if (!d || !d.name) return;
             const modal = document.getElementById("myModal");
             let html = `<b>Họ & tên:</b> ${d.name}<br>`;
             if (d.role) html += `<b>Chức vụ:</b> ${d.role}<br>`;
             if (d.phone) html += `<b>Số điện thoại:</b> ${d.phone}<br>`;
             if (d.seat) html += `<b>Vị trí ngồi:</b> ${d.seat}<br>`;
             if (d.area) html += `<b>Khu vực quản lý:</b> ${d.area}<br>`;
-            
             document.getElementById("modal-detail").innerHTML = html;
             modal.style.display = "flex";
         }
@@ -111,24 +129,39 @@
             window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
             
             myDiagram.addDiagramListener("ObjectSingleClicked", e => {
-                const part = e.subject.part;
-                if (!(part instanceof go.Node)) return;
-                const d = part.data;
-                selectedNode = d;
+                const part = e.subject.part; if (!(part instanceof go.Node)) return;
+                const d = part.data; selectedNode = d;
                 if (d.isFloor || d.isGroupNode) { myDiagram.startTransaction("toggleExpand"); part.isTreeExpanded = !part.isTreeExpanded; myDiagram.commitTransaction("toggleExpand"); }
-                
-                // Sử dụng hàm mới để hiển thị popup
                 showDetailsModal(d);
             });
             
+            // CẬP NHẬT: Thêm biến cho nút xóa
             const searchInput = document.getElementById('searchInput');
             const searchResults = document.getElementById('searchResults');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+
             searchInput.addEventListener('keyup', searchStaff);
             searchInput.addEventListener('focus', searchStaff);
             document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) { searchResults.style.display = 'none'; } });
 
+            // MỚI: Thêm sự kiện click cho nút xóa
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = ''; // Xóa nội dung
+                searchResults.style.display = 'none'; // Ẩn kết quả
+                clearSearchBtn.style.display = 'none'; // Ẩn chính nó
+                searchInput.focus(); // Focus lại vào ô input
+            });
+
             function searchStaff() {
                 const query = searchInput.value.toLowerCase().trim();
+                
+                // MỚI: Hiện/ẩn nút xóa dựa vào nội dung input
+                if (query.length > 0) {
+                    clearSearchBtn.style.display = 'block';
+                } else {
+                    clearSearchBtn.style.display = 'none';
+                }
+
                 if (!query) { searchResults.style.display = 'none'; return; }
                 const allNodes = myDiagram.model.nodeDataArray;
                 const results = allNodes.filter(node => {
@@ -148,7 +181,6 @@
                     results.forEach(res => { html += `<li data-key="${res.key}"><span class="name">${res.name}</span><span class="area">${res.area || 'Chưa có khu vực quản lý'}</span></li>`; });
                     html += '</ul>';
                     searchResults.innerHTML = html;
-
                     searchResults.querySelectorAll('li').forEach(item => {
                         item.addEventListener('click', () => {
                             const key = parseInt(item.getAttribute('data-key'));
@@ -157,17 +189,14 @@
                                 myDiagram.startTransaction("expand and select");
                                 let parent = nodeToSelect.findTreeParentNode();
                                 while (parent !== null) { parent.isTreeExpanded = true; parent = parent.findTreeParentNode(); }
-                                
                                 myDiagram.select(nodeToSelect); 
                                 myDiagram.centerRect(nodeToSelect.actualBounds); 
                                 if (myDiagram.scale > 1.5) myDiagram.scale = 1.5; 
-                                
-                                // CẬP NHẬT: Gọi hàm hiển thị popup chi tiết
                                 showDetailsModal(nodeToSelect.data);
-
                                 myDiagram.commitTransaction("expand and select");
                                 searchResults.style.display = 'none'; 
-                                searchInput.value = nodeToSelect.data.name; 
+                                searchInput.value = nodeToSelect.data.name;
+                                clearSearchBtn.style.display = 'block'; // Hiển thị nút xóa sau khi chọn
                             }
                         });
                     });
