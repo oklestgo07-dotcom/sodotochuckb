@@ -2,130 +2,129 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sơ đồ nhân sự</title>
     <script src="https://unpkg.com/gojs/release/go.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         /* === GIAO DIỆN CHUNG === */
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: #f0f2f5;
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            background-color: #f0f2f5; 
         }
-        #toolbar {
-            padding: 8px 15px;
-            background: #ffffff;
-            border-bottom: 1px solid #e0e0e0;
+        #toolbar { 
+            padding: 8px 15px; 
+            background: #ffffff; 
+            border-bottom: 1px solid #e0e0e0; 
             box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-            display: flex;
-            gap: 10px;
+            display: flex; 
+            gap: 10px; 
             align-items: center;
-        }
-        /* Sửa lại #main để #chart chiếm toàn bộ không gian */
-        #main {
-            flex: 1;
-            position: relative; /* Cần cho popup overlay */
-        }
-        #chart {
-            width: 100%;
-            height: 100%;
-            background-color: #f0f2f5;
-        }
-
-        /* === POPUP THÔNG TIN CHI TIẾT === */
-        #popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* Nền mờ */
-            z-index: 999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        #popup-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        #popup-info {
-            width: 400px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-        #popup-overlay.visible #popup-info {
-            transform: scale(1);
-        }
-        .popup-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .popup-header .title {
-            font-weight: 600;
-            font-size: 20px; /* Chỉnh lại size cho phù hợp popup */
-            color: #1877f2;
-            margin: 0;
-            padding: 0;
-            border: none;
-        }
-        #popup-close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-            line-height: 1;
-        }
-        #popup-close-btn:hover {
-            color: #333;
-        }
-        #popup-detail {
-            padding: 20px;
-            font-size: 16px; /* Chỉnh lại size cho phù hợp popup */
-            line-height: 1.8;
-            color: #333;
-        }
-        #popup-detail b {
-            color: #555;
-            font-weight: 600; /* Tăng độ đậm */
-            min-width: 120px;
-            display: inline-block;
-        }
-
+        } 
+        #main { flex: 1; }
+        #chart { width: 100%; height: 100%; }
 
         /* === TOOLBAR BUTTONS === */
-        button.icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            padding: 8px;
-            border-radius: 8px;
+        button.icon-btn { 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 20px; 
+            padding: 8px; 
+            border-radius: 8px; 
             color: #555;
             transition: all 0.2s;
         }
-        button.icon-btn:hover {
-            color: #1877f2;
-            background: rgba(24, 119, 242, 0.1);
+        button.icon-btn:hover { 
+            color: #1877f2; 
+            background: rgba(24, 119, 242, 0.1); 
+        }
+
+        /* === MODAL POPUP === */
+        .modal {
+            display: none; /* Ẩn mặc định */
+            position: fixed; 
+            z-index: 1000; /* Luôn nằm trên cùng */
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); /* Nền mờ */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            justify-content: center; /* Căn giữa theo chiều ngang */
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 25px 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 450px; /* Chiều rộng tối đa */
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+        .modal-title { 
+            font-weight: 600; 
+            font-size: 24px; 
+            margin-bottom: 15px; 
+            color: #1877f2; 
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        #modal-detail {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+        }
+        #modal-detail b {
+            color: #555;
+            font-weight: 600;
+            min-width: 110px;
+            display: inline-block;
+        }
+
+        /* MỚI THÊM: CSS Tối ưu cho màn hình di động */
+        @media (max-width: 600px) {
+            #modal-detail {
+                font-size: 18px; /* Tăng cỡ chữ trong popup cho dễ đọc */
+                line-height: 1.9;
+            }
+            /* Chuyển layout để nhãn và giá trị nằm trên 2 dòng khác nhau, dễ nhìn hơn */
+            #modal-detail b {
+                display: block; /* Hiển thị thành một khối riêng */
+                min-width: unset; /* Bỏ chiều rộng tối thiểu */
+                margin-bottom: 4px;
+                color: #1877f2;
+            }
         }
     </style>
 </head>
 <body>
     <div id="toolbar">
-        <button onclick="resetDiagram()" title="Reset/Phóng to vừa khung" class="icon-btn">
+        <button onclick="resetDiagram()" title="Reset/Phóng to vừa khung" class="icon-btn"> 
             <i class="fas fa-sitemap"></i>
         </button>
     </div>
@@ -134,33 +133,26 @@
         <div id="chart"></div>
     </div>
 
-    <div id="popup-overlay">
-        <div id="popup-info">
-            <div class="popup-header">
-                <div class="title">Chi tiết Nhân sự</div>
-                <button id="popup-close-btn">&times;</button>
-            </div>
-            <div id="popup-detail">
-                </div>
-        </div>
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-title">Chi tiết Nhân sự</div>
+        <div id="modal-detail"></div>
+      </div>
     </div>
-
 
     <script>
         let myDiagram;
-        let selectedNode = null;
-
-        // Khai báo các biến cho popup
-        let popupOverlay, popupDetail, closeBtn;
+        let selectedNode = null; 
 
         // Hàm viết tắt chức vụ (Không viết tắt Giao dịch viên)
         function abbrevRole(role) {
             if (!role) return "";
-
+            
             if (role === "Giao dịch viên") {
-                return role;
+                return role; 
             }
-
+            
             return role
                 .replace("Trưởng phòng", "Trưởng phòng")
                 .replace("Phó Trưởng phòng", "Phó Trưởng phòng")
@@ -174,16 +166,16 @@
             if (!d.name && d.short) {
                 return d.short;
             }
-
+            
             // Đối với Node nhân sự: Tên (Chức vụ viết tắt)
             const roleAbbrev = abbrevRole(d.role);
-
+            
             if (d.name) {
                 // Yêu cầu: Tên đầy đủ phía trên, Chức vụ viết tắt phía dưới
                 return d.name + (roleAbbrev ? "\n(" + roleAbbrev + ")" : "");
             }
-
-            return d.short || "";
+            
+            return d.short || ""; 
         }
 
         // Hàm tạo node template mới
@@ -191,23 +183,23 @@
             const $ = go.GraphObject.make;
 
             return $(go.Node, "Auto",
-                {
+                { 
                     isTreeExpanded: false,
                     selectionAdornmentTemplate:
                         $(go.Adornment, "Auto",
                             $(go.Shape, "RoundedRectangle", { fill: null, stroke: "#1877f2", strokeWidth: 3 }),
                             $(go.Placeholder)
                         ),
-                    shadowColor: "#aaaaaa",
+                    shadowColor: "#aaaaaa", 
                     shadowOffset: new go.Point(2, 2)
                 },
                 // Vùng chính (Rectangle)
                 $(go.Shape, "RoundedRectangle",
-                    new go.Binding("fill", "color"),
-                    {
-                        stroke: "#ddd",
+                    new go.Binding("fill", "color"), 
+                    { 
+                        stroke: "#ddd", 
                         strokeWidth: 1,
-                        minSize: new go.Size(180, 50)
+                        minSize: new go.Size(180, 50) 
                     }
                 ),
                 // Nội dung (TextBlock)
@@ -224,9 +216,7 @@
             );
         }
 
-
         // ==== Các hàm lưu / tải / init (Giữ nguyên logic data) ====
-
         function loadFromLocal() {
             const saved = localStorage.getItem("orgChartModel");
             if (saved) {
@@ -245,47 +235,29 @@
         function init() {
             const $ = go.GraphObject.make;
 
-            // Lấy các element của popup
-            popupOverlay = document.getElementById('popup-overlay');
-            popupDetail = document.getElementById('popup-detail');
-            closeBtn = document.getElementById('popup-close-btn');
-
-            // Gán sự kiện đóng popup
-            closeBtn.onclick = () => popupOverlay.classList.remove('visible');
-            popupOverlay.onclick = (event) => {
-                if (event.target === popupOverlay) {
-                    popupOverlay.classList.remove('visible');
-                }
-            };
-
-
             myDiagram = $(go.Diagram, "chart", {
                 layout: $(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 50, columnSpacing: 30 }),
                 "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
                 allowZoom: true,
-                allowMove: false,
-                allowCopy: false,
-                allowDelete: false,
+                allowMove: false, 
+                allowCopy: false, 
+                allowDelete: false, 
                 allowInsert: false,
-                initialAutoScale: go.Diagram.Uniform,
+                initialAutoScale: go.Diagram.Uniform, 
                 padding: 10
             });
 
-            // Gán template Node đã chỉnh sửa
             myDiagram.nodeTemplate = createNodeTemplate();
 
-            // Nếu không có dữ liệu lưu thì dùng dữ liệu gốc
             if (!loadFromLocal()) {
-
-                // ==== DỮ LIỆU GỐC (Giữ nguyên) ====
                 const dataColors = {
-                    manager: "#2a8bdc",
-                    deputy: "#4caf50",
-                    chiefAcc: "#e91e63",
-                    authAcc: "#ff9800",
-                    gdv: "#03a9f4",
-                    group: "#673ab7",
-                    floor: "#9c27b0"
+                    manager: "#2a8bdc",     
+                    deputy: "#4caf50",      
+                    chiefAcc: "#e91e63",    
+                    authAcc: "#ff9800",     
+                    gdv: "#03a9f4",         
+                    group: "#673ab7",      
+                    floor: "#9c27b0"        
                 };
 
                 nodeData = [
@@ -301,7 +273,7 @@
                     { key: 10, name: "Nguyễn Thị Thanh Thảo", role: "Ủy quyền Kế toán trưởng", phone: "094.428.0844", seat: "Tầng 4", color: dataColors.authAcc },
                     { key: 11, name: "Lê Thị Thúy Hằng", role: "Ủy quyền Kế toán trưởng", phone: "098.928.0357", seat: "Tầng 4", color: dataColors.authAcc },
                     { key: 12, name: "Nguyễn Thị Thúy Mẫn", role: "Ủy quyền Kế toán trưởng", phone: "098.928.0357", seat: "Tầng 5", color: dataColors.authAcc },
-
+                    
                     { key: 100, short: "Giao dịch viên", role: "Nhóm Giao dịch viên", isGroupNode: true, color: dataColors.group },
                     { key: 20, short: "Tầng 1", isFloor: true, color: dataColors.floor },
                     { key: 30, short: "Tầng 2", isFloor: true, color: dataColors.floor },
@@ -309,18 +281,15 @@
                     { key: 50, short: "Tầng 4", isFloor: true, color: dataColors.floor },
                     { key: 60, short: "Tầng 5", isFloor: true, color: dataColors.floor }
                 ];
-
+                
                 let nextKey = 1000;
                 const gdvList = [
-                    // Tầng 1 (key 20)
                     { name: "Nguyễn Ngọc Anh", phone: "096.982.5676", seat: "Tầng 1", parent: 20 },
                     { name: "Phạm Cao Sơn", phone: "090.890.8405", seat: "Tầng 1", parent: 20 },
                     { name: "Dương Thị Quý Mai", phone: "070.633.1049", seat: "Tầng 1", parent: 20 },
                     { name: "Đỗ Ngọc Khánh", phone: "090.729.9449", seat: "Tầng 1", parent: 20 },
                     { name: "Trần Thị Nguyệt", phone: "077.445.8098", seat: "Tầng 1", parent: 20 },
                     { name: "Nguyễn Hải Kim Thảo", phone: "077.667.3667", seat: "Tầng 1", parent: 20 },
-
-                    // Tầng 2 (key 30)
                     { name: "Lê Nguyễn Thanh Thúy", phone: "092.252.6672", seat: "Tầng 2", parent: 30 },
                     { name: "Nguyễn Hân", phone: "091.881.7681", seat: "Tầng 2", parent: 30 },
                     { name: "Nguyễn Thị Thùy Linh", phone: "093.655.7559", seat: "Tầng 2", parent: 30 },
@@ -328,8 +297,6 @@
                     { name: "Nguyễn Thị Thủy", phone: "090.834.7954", seat: "Tầng 2", parent: 30 },
                     { name: "Nguyễn Quế Lâm", phone: "036.907.6932", seat: "Tầng 2", parent: 30 },
                     { name: "Nguyễn Thị Trúc Uyên", phone: "090.731.3090", seat: "Tầng 2", parent: 30 },
-
-                    // Tầng 3 (key 40)
                     { name: "Thới Mỹ Hạnh", phone: "098.445.5773", seat: "Tầng 3", parent: 40 },
                     { name: "Đinh Thị Vân Thi", phone: "098.959.8905", seat: "Tầng 3", parent: 40 },
                     { name: "Trương Thị Hồng Ý", phone: "093.536.5563", seat: "Tầng 3", parent: 40 },
@@ -340,8 +307,6 @@
                     { name: "Trần Thị Ngọc Mai", phone: "078.228.3293", seat: "Tầng 3", parent: 40 },
                     { name: "Phạm Thị Hồng Điệp", phone: "090.244.9479", seat: "Tầng 3", parent: 40 },
                     { name: "Nguyễn Phụng Kiều Tiên", phone: "090.919.7333", seat: "Tầng 3", parent: 40 },
-
-                    // Tầng 4 (key 50)
                     { name: "Nguyễn Minh Chi", phone: "093.127.9276", seat: "Tầng 4", parent: 50 },
                     { name: "Lê Thị Hương Thu", phone: "093.176.8203", seat: "Tầng 4", parent: 50 },
                     { name: "Nguyễn Ngọc Quỳnh Hương", phone: "093.204.2725", seat: "Tầng 4", parent: 50 },
@@ -351,28 +316,24 @@
                     { name: "Trần Hoàng Phú", phone: "093.857.9836", seat: "Tầng 4", parent: 50 },
                     { name: "Nguyễn Thị Hồng Phượng", phone: "033.245.8858", seat: "Tầng 4", parent: 50 },
                     { name: "Nguyễn Thị Ngọc", phone: "097.537.9135", seat: "Tầng 4", parent: 50 },
-
-                    // Tầng 5 (key 60)
                     { name: "Hồ Minh Duy", phone: "083.499.0690", seat: "Tầng 5", parent: 60 },
                     { name: "Mai Vũ Minh Hà", phone: "034.686.9638", seat: "Tầng 5", parent: 60 },
                     { name: "Lê Thị Thu Hương", phone: "090.587.1467", seat: "Tầng 5", parent: 60 }
                 ];
-
-                // Thêm GDV vào nodeData
+                
                 gdvList.forEach(d => {
-                    nodeData.push({
-                        key: nextKey++,
-                        name: d.name,
-                        role: "Giao dịch viên",
-                        phone: d.phone,
-                        seat: d.seat,
-                        isGDV: true,
+                    nodeData.push({ 
+                        key: nextKey++, 
+                        name: d.name, 
+                        role: "Giao dịch viên", 
+                        phone: d.phone, 
+                        seat: d.seat, 
+                        isGDV: true, 
                         color: dataColors.gdv,
-                        parentRef: d.parent
+                        parentRef: d.parent 
                     });
                 });
 
-                // --- Liên kết (Link Data) ---
                 linkData = [
                     { from: 1, to: 2 }, { from: 1, to: 3 }, { from: 1, to: 4 },
                     { from: 2, to: 5 }, { from: 3, to: 5 }, { from: 4, to: 5 },
@@ -382,7 +343,7 @@
                     { from: 9, to: 100 }, { from: 10, to: 100 }, { from: 11, to: 100 }, { from: 12, to: 100 },
                     { from: 100, to: 20 }, { from: 100, to: 30 }, { from: 100, to: 40 }, { from: 100, to: 50 }, { from: 100, to: 60 }
                 ];
-
+                
                 for (let n of nodeData) {
                     if (n.isGDV) {
                         linkData.push({ from: n.parentRef, to: n.key });
@@ -390,6 +351,17 @@
                 }
 
                 myDiagram.model = new go.GraphLinksModel(nodeData, linkData);
+            } 
+
+            // === LOGIC CHO MODAL ===
+            const modal = document.getElementById("myModal");
+            const closeBtn = document.getElementsByClassName("close")[0];
+
+            closeBtn.onclick = () => { modal.style.display = "none"; }
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
             }
 
             // Sự kiện click node
@@ -406,19 +378,17 @@
                     myDiagram.commitTransaction("toggleExpand");
                 }
 
-                // CHỈ HIỂN THỊ POPUP NẾU NODE LÀ NHÂN SỰ (có tên)
+                // Hiển thị chi tiết trong POPUP (chỉ cho nhân sự có tên)
                 if (d.name) {
-                    let html = "";
-                    if (d.name) html += `<b>Họ & tên:</b> ${d.name}<br>`;
-                    if (d.role) html += `<b>Chức vụ:</b> ${d.role}<br>`;
-                    if (d.phone) html += `<b>Số điện thoại:</b> ${d.phone}<br>`;
-                    if (d.seat) html += `<b>Vị trí ngồi:</b> ${d.seat}<br>`;
+                     let html = "";
+                     html += `<b>Họ & tên:</b> ${d.name}<br>`;
+                     if (d.role) html += `<b>Chức vụ:</b> ${d.role}<br>`;
+                     if (d.phone) html += `<b>Số điện thoại:</b> ${d.phone}<br>`;
+                     if (d.seat) html += `<b>Vị trí ngồi:</b> ${d.seat}<br>`;
 
-                    // Điền nội dung và hiển thị popup
-                    popupDetail.innerHTML = html;
-                    popupOverlay.classList.add('visible');
+                     document.getElementById("modal-detail").innerHTML = html;
+                     modal.style.display = "flex"; // Dùng flex để căn giữa
                 }
-
             });
 
             resetDiagram();
@@ -430,21 +400,11 @@
                 if (n.data.key <= 12 || n.data.key === 100) {
                     n.isTreeExpanded = true;
                 } else {
-                    n.isTreeExpanded = false;
+                    n.isTreeExpanded = false; 
                 }
             });
-            myDiagram.zoomToFit();
+            myDiagram.zoomToFit(); 
             myDiagram.commitTransaction("reset");
-        }
-
-
-        function escapeHtml(unsafe) {
-            return String(unsafe)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
         }
 
         window.addEventListener('DOMContentLoaded', init);
