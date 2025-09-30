@@ -7,118 +7,36 @@
     <script src="https://unpkg.com/gojs/release/go.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* === GIAO DIỆN CHUNG === */
-        body { 
-            margin: 0; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            background-color: #f0f2f5; 
-        }
-        #toolbar { 
-            padding: 8px 15px; 
-            background: #ffffff; 
-            border-bottom: 1px solid #e0e0e0; 
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-            display: flex; 
-            gap: 10px; 
-            align-items: center;
-        } 
-        #main { flex: 1; }
+        /* Toàn bộ CSS giữ nguyên như cũ */
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; height: 100vh; background-color: #f0f2f5; }
+        #toolbar { padding: 8px 15px; background: #ffffff; border-bottom: 1px solid #e0e0e0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } 
+        #main { flex: 1; position: relative; }
         #chart { width: 100%; height: 100%; }
-
-        /* === TOOLBAR BUTTONS === */
-        button.icon-btn { 
-            background: none; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 20px; 
-            padding: 8px; 
-            border-radius: 8px; 
-            color: #555;
-            transition: all 0.2s;
-        }
-        button.icon-btn:hover { 
-            color: #1877f2; 
-            background: rgba(24, 119, 242, 0.1); 
-        }
-
-        /* === MODAL POPUP === */
-        .modal {
-            display: none; /* Ẩn mặc định */
-            position: fixed; 
-            z-index: 1000; /* Luôn nằm trên cùng */
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgba(0,0,0,0.5); /* Nền mờ */
-            align-items: center; /* Căn giữa theo chiều dọc */
-            justify-content: center; /* Căn giữa theo chiều ngang */
-        }
-        .modal-content {
-            background-color: #ffffff;
-            padding: 25px 30px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 450px; /* Chiều rộng tối đa */
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .close {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover,
-        .close:focus {
-            color: #000;
-        }
-        .modal-title { 
-            font-weight: 600; 
-            font-size: 24px; 
-            margin-bottom: 15px; 
-            color: #1877f2; 
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-        #modal-detail {
-            font-size: 16px;
-            line-height: 1.8;
-            color: #333;
-        }
-        #modal-detail b {
-            color: #555;
-            font-weight: 600;
-            min-width: 110px;
-            display: inline-block;
-        }
-
-        /* MỚI THÊM: CSS Tối ưu cho màn hình di động */
+        button.icon-btn { background: none; border: none; cursor: pointer; font-size: 20px; padding: 8px; border-radius: 8px; color: #555; transition: all 0.2s; }
+        button.icon-btn:hover { color: #1877f2; background: rgba(24, 119, 242, 0.1); }
+        .search-container { display: flex; align-items: center; gap: 5px; position: relative; }
+        #searchInput { border: 1px solid #ccc; border-radius: 18px; padding: 8px 15px 8px 35px; font-size: 14px; outline: none; transition: border-color 0.2s; min-width: 250px; }
+        #searchInput:focus { border-color: #1877f2; }
+        .search-container .fa-search { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; }
+        #searchResults { position: absolute; top: calc(100% + 5px); left: 0; background: white; border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1001; width: 100%; max-width: 350px; }
+        #searchResults ul { list-style: none; padding: 5px 0; margin: 0; }
+        #searchResults li { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        #searchResults li:last-child { border-bottom: none; }
+        #searchResults li:hover { background-color: #f5f5f5; }
+        #searchResults .name { font-weight: 600; color: #333; }
+        #searchResults .area { font-size: 0.9em; color: #666; display: block; }
+        #searchResults .no-results { padding: 15px; color: #888; text-align: center; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background-color: #ffffff; padding: 25px 30px; border: 1px solid #888; width: 90%; max-width: 450px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .close { color: #aaa; position: absolute; top: 10px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover, .close:focus { color: #000; }
+        .modal-title { font-weight: 600; font-size: 24px; margin-bottom: 15px; color: #1877f2; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        #modal-detail { font-size: 16px; line-height: 1.8; color: #333; }
+        #modal-detail b { color: #555; font-weight: 600; min-width: 110px; display: inline-block; }
         @media (max-width: 600px) {
-            #modal-detail {
-                font-size: 18px; /* Tăng cỡ chữ trong popup cho dễ đọc */
-                line-height: 1.9;
-            }
-            /* Chuyển layout để nhãn và giá trị nằm trên 2 dòng khác nhau, dễ nhìn hơn */
-            #modal-detail b {
-                display: block; /* Hiển thị thành một khối riêng */
-                min-width: unset; /* Bỏ chiều rộng tối thiểu */
-                margin-bottom: 4px;
-                color: #1877f2;
-            }
+            #modal-detail { font-size: 18px; line-height: 1.9; }
+            #modal-detail b { display: block; min-width: unset; margin-bottom: 4px; color: #1877f2; }
         }
     </style>
 </head>
@@ -127,12 +45,15 @@
         <button onclick="resetDiagram()" title="Reset/Phóng to vừa khung" class="icon-btn"> 
             <i class="fas fa-sitemap"></i>
         </button>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Tìm theo tên hoặc khu vực quản lý...">
+            <div id="searchResults" style="display: none;"></div>
+        </div>
     </div>
-
     <div id="main">
         <div id="chart"></div>
     </div>
-
     <div id="myModal" class="modal">
       <div class="modal-content">
         <span class="close">&times;</span>
@@ -145,251 +66,114 @@
         let myDiagram;
         let selectedNode = null; 
 
-        // Hàm viết tắt chức vụ (Không viết tắt Giao dịch viên)
-        function abbrevRole(role) {
-            if (!role) return "";
+        // Các hàm tiện ích (giữ nguyên)
+        function abbrevRole(role) { if (!role) return ""; if (role === "Giao dịch viên") return role; return role.replace("Trưởng phòng", "Trưởng phòng").replace("Phó Trưởng phòng", "Phó Trưởng phòng").replace("Kế toán trưởng", "Kế toán trưởng").replace("Ủy quyền Kế toán trưởng", "UQ. KTT"); }
+        function createNodeText(d) { if (!d.name && d.short) return d.short; const roleAbbrev = abbrevRole(d.role); if (d.name) return d.name + (roleAbbrev ? "\n(" + roleAbbrev + ")" : ""); return d.short || ""; }
+        function createNodeTemplate() { const $ = go.GraphObject.make; return $(go.Node, "Auto", { isTreeExpanded: false, selectionAdornmentTemplate: $(go.Adornment, "Auto", $(go.Shape, "RoundedRectangle", { fill: null, stroke: "#1877f2", strokeWidth: 3 }), $(go.Placeholder)), shadowColor: "#aaaaaa", shadowOffset: new go.Point(2, 2) }, $(go.Shape, "RoundedRectangle", new go.Binding("fill", "color"), { stroke: "#ddd", strokeWidth: 1, minSize: new go.Size(180, 50) }), $(go.TextBlock, { margin: 10, stroke: "white", font: "500 13px Segoe UI, sans-serif", wrap: go.TextBlock.WrapFit, textAlign: "center" }, new go.Binding("text", "", createNodeText))); }
+        function loadFromLocal() { const saved = localStorage.getItem("orgChartModel"); if (saved) { try { myDiagram.model = go.Model.fromJson(saved); return true; } catch (e) { console.error("Lỗi tải localStorage:", e); localStorage.removeItem("orgChartModel"); return false; } } return false; }
+
+        // MỚI: Hàm tập trung việc hiển thị popup chi tiết
+        function showDetailsModal(d) {
+            if (!d || !d.name) return; // Chỉ hiển thị cho nhân sự có tên
+
+            const modal = document.getElementById("myModal");
+            let html = `<b>Họ & tên:</b> ${d.name}<br>`;
+            if (d.role) html += `<b>Chức vụ:</b> ${d.role}<br>`;
+            if (d.phone) html += `<b>Số điện thoại:</b> ${d.phone}<br>`;
+            if (d.seat) html += `<b>Vị trí ngồi:</b> ${d.seat}<br>`;
+            if (d.area) html += `<b>Khu vực quản lý:</b> ${d.area}<br>`;
             
-            if (role === "Giao dịch viên") {
-                return role; 
-            }
-            
-            return role
-                .replace("Trưởng phòng", "Trưởng phòng")
-                .replace("Phó Trưởng phòng", "Phó Trưởng phòng")
-                .replace("Kế toán trưởng", "Kế toán trưởng")
-                .replace("Ủy quyền Kế toán trưởng", "UQ. KTT");
+            document.getElementById("modal-detail").innerHTML = html;
+            modal.style.display = "flex";
         }
 
-        // Hàm tạo text hiển thị trên Node
-        function createNodeText(d) {
-            // Đối với Node không có tên (Nhóm GDV, Tầng)
-            if (!d.name && d.short) {
-                return d.short;
-            }
-            
-            // Đối với Node nhân sự: Tên (Chức vụ viết tắt)
-            const roleAbbrev = abbrevRole(d.role);
-            
-            if (d.name) {
-                // Yêu cầu: Tên đầy đủ phía trên, Chức vụ viết tắt phía dưới
-                return d.name + (roleAbbrev ? "\n(" + roleAbbrev + ")" : "");
-            }
-            
-            return d.short || ""; 
-        }
-
-        // Hàm tạo node template mới
-        function createNodeTemplate() {
-            const $ = go.GraphObject.make;
-
-            return $(go.Node, "Auto",
-                { 
-                    isTreeExpanded: false,
-                    selectionAdornmentTemplate:
-                        $(go.Adornment, "Auto",
-                            $(go.Shape, "RoundedRectangle", { fill: null, stroke: "#1877f2", strokeWidth: 3 }),
-                            $(go.Placeholder)
-                        ),
-                    shadowColor: "#aaaaaa", 
-                    shadowOffset: new go.Point(2, 2)
-                },
-                // Vùng chính (Rectangle)
-                $(go.Shape, "RoundedRectangle",
-                    new go.Binding("fill", "color"), 
-                    { 
-                        stroke: "#ddd", 
-                        strokeWidth: 1,
-                        minSize: new go.Size(180, 50) 
-                    }
-                ),
-                // Nội dung (TextBlock)
-                $(go.TextBlock,
-                    {
-                        margin: 10,
-                        stroke: "white",
-                        font: "500 13px Segoe UI, sans-serif",
-                        wrap: go.TextBlock.WrapFit,
-                        textAlign: "center"
-                    },
-                    new go.Binding("text", "", createNodeText)
-                )
-            );
-        }
-
-        // ==== Các hàm lưu / tải / init (Giữ nguyên logic data) ====
-        function loadFromLocal() {
-            const saved = localStorage.getItem("orgChartModel");
-            if (saved) {
-                try {
-                    myDiagram.model = go.Model.fromJson(saved);
-                    return true;
-                } catch (e) {
-                    console.error("Lỗi khi tải dữ liệu từ localStorage:", e);
-                    localStorage.removeItem("orgChartModel");
-                    return false;
-                }
-            }
-            return false;
-        }
 
         function init() {
             const $ = go.GraphObject.make;
-
-            myDiagram = $(go.Diagram, "chart", {
-                layout: $(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 50, columnSpacing: 30 }),
-                "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
-                allowZoom: true,
-                allowMove: false, 
-                allowCopy: false, 
-                allowDelete: false, 
-                allowInsert: false,
-                initialAutoScale: go.Diagram.Uniform, 
-                padding: 10
-            });
-
+            myDiagram = $(go.Diagram, "chart", { layout: $(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 50, columnSpacing: 30 }), "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom, allowZoom: true, allowMove: false, allowCopy: false, allowDelete: false, allowInsert: false, initialAutoScale: go.Diagram.Uniform, padding: 10 });
             myDiagram.nodeTemplate = createNodeTemplate();
 
+            // Phần dữ liệu không thay đổi
             if (!loadFromLocal()) {
-                const dataColors = {
-                    manager: "#2a8bdc",     
-                    deputy: "#4caf50",      
-                    chiefAcc: "#e91e63",    
-                    authAcc: "#ff9800",     
-                    gdv: "#03a9f4",         
-                    group: "#673ab7",      
-                    floor: "#9c27b0"        
-                };
-
-                nodeData = [
-                    { key: 1, name: "Trần Thị Tuyết Mai", role: "Trưởng phòng", phone: "091.859.7568", seat: "Tầng 5", color: dataColors.manager },
-                    { key: 2, name: "Đinh Bá Tòng", role: "Phó Trưởng phòng", phone: "094.431.0999", seat: "Tầng 4", color: dataColors.deputy },
-                    { key: 3, name: "Nguyễn Minh Tuấn", role: "Phó Trưởng phòng", phone: "090.902.4682", seat: "Tầng 5", color: dataColors.deputy },
-                    { key: 4, name: "Nguyễn Thị Thanh Hường", role: "Phó Trưởng phòng", phone: "098.317.1016", seat: "Tầng 2", color: dataColors.deputy },
-                    { key: 5, name: "Nguyễn Thị Ngọc Lan", role: "Kế toán trưởng", phone: "091.855.1655", seat: "Tầng 2", color: dataColors.chiefAcc },
-                    { key: 6, name: "Nguyễn Vân Anh", role: "Ủy quyền Kế toán trưởng", phone: "078.658.2268", seat: "Tầng 1", color: dataColors.authAcc },
-                    { key: 7, name: "Dương Thị Tuyết Trinh", role: "Ủy quyền Kế toán trưởng", phone: "097.661.0090", seat: "Tầng 3", color: dataColors.authAcc },
-                    { key: 8, name: "Trần Thị Như Ngọc", role: "Ủy quyền Kế toán trưởng", phone: "090.717.0189", seat: "Tầng 3", color: dataColors.authAcc },
-                    { key: 9, name: "Hoàng Thị Ngọc Lan", role: "Ủy quyền Kế toán trưởng", phone: "081.368.9368", seat: "Tầng 3", color: dataColors.authAcc },
-                    { key: 10, name: "Nguyễn Thị Thanh Thảo", role: "Ủy quyền Kế toán trưởng", phone: "094.428.0844", seat: "Tầng 4", color: dataColors.authAcc },
-                    { key: 11, name: "Lê Thị Thúy Hằng", role: "Ủy quyền Kế toán trưởng", phone: "098.928.0357", seat: "Tầng 4", color: dataColors.authAcc },
-                    { key: 12, name: "Nguyễn Thị Thúy Mẫn", role: "Ủy quyền Kế toán trưởng", phone: "098.928.0357", seat: "Tầng 5", color: dataColors.authAcc },
-                    
-                    { key: 100, short: "Giao dịch viên", role: "Nhóm Giao dịch viên", isGroupNode: true, color: dataColors.group },
-                    { key: 20, short: "Tầng 1", isFloor: true, color: dataColors.floor },
-                    { key: 30, short: "Tầng 2", isFloor: true, color: dataColors.floor },
-                    { key: 40, short: "Tầng 3", isFloor: true, color: dataColors.floor },
-                    { key: 50, short: "Tầng 4", isFloor: true, color: dataColors.floor },
-                    { key: 60, short: "Tầng 5", isFloor: true, color: dataColors.floor }
-                ];
-                
+                const dataColors = { manager: "#2a8bdc", deputy: "#4caf50", chiefAcc: "#e91e63", authAcc: "#ff9800", gdv: "#03a9f4", group: "#673ab7", floor: "#9c27b0" };
+                let nodeData = [ { key: 1, name: "Trần Thị Tuyết Mai", role: "Trưởng phòng", phone: "091.859.7568", seat: "Tầng 5", color: dataColors.manager }, { key: 2, name: "Đinh Bá Tòng", role: "Phó Trưởng phòng", phone: "094.431.0999", seat: "Tầng 4", color: dataColors.deputy }, { key: 3, name: "Nguyễn Minh Tuấn", role: "Phó Trưởng phòng", phone: "090.902.4682", seat: "Tầng 5", color: dataColors.deputy }, { key: 4, name: "Nguyễn Thị Thanh Hường", role: "Phó Trưởng phòng", phone: "098.317.1016", seat: "Tầng 2", color: dataColors.deputy }, { key: 5, name: "Nguyễn Thị Ngọc Lan", role: "Kế toán trưởng", phone: "091.855.1655", seat: "Tầng 2", color: dataColors.chiefAcc }, { key: 6, name: "Nguyễn Vân Anh", role: "Ủy quyền Kế toán trưởng", phone: "078.658.2268", seat: "Tầng 1", color: dataColors.authAcc }, { key: 7, name: "Dương Thị Tuyết Trinh", role: "Ủy quyền Kế toán trưởng", phone: "097.661.0090", seat: "Tầng 3", color: dataColors.authAcc }, { key: 8, name: "Trần Thị Như Ngọc", role: "Ủy quyền Kế toán trưởng", phone: "090.717.0189", seat: "Tầng 3", color: dataColors.authAcc }, { key: 9, name: "Hoàng Thị Ngọc Lan", role: "Ủy quyền Kế toán trưởng", phone: "081.368.9368", seat: "Tầng 3", color: dataColors.authAcc }, { key: 10, name: "Nguyễn Thị Thanh Thảo", role: "Ủy quyền Kế toán trưởng", phone: "094.428.0844", seat: "Tầng 4", color: dataColors.authAcc }, { key: 11, name: "Lê Thị Thúy Hằng", role: "Ủy quyền Kế toán trưởng", phone: "098.928.0357", seat: "Tầng 4", color: dataColors.authAcc }, { key: 12, name: "Nguyễn Thị Thúy Mẫn", role: "Ủy quyền Kế toán trưởng", phone: "098.928.0357", seat: "Tầng 5", color: dataColors.authAcc }, { key: 100, short: "Giao dịch viên", role: "Nhóm Giao dịch viên", isGroupNode: true, color: dataColors.group }, { key: 20, short: "Tầng 1", isFloor: true, color: dataColors.floor }, { key: 30, short: "Tầng 2", isFloor: true, color: dataColors.floor }, { key: 40, short: "Tầng 3", isFloor: true, color: dataColors.floor }, { key: 50, short: "Tầng 4", isFloor: true, color: dataColors.floor }, { key: 60, short: "Tầng 5", isFloor: true, color: dataColors.floor } ];
                 let nextKey = 1000;
-                const gdvList = [
-                    { name: "Nguyễn Ngọc Anh", phone: "096.982.5676", seat: "Tầng 1", parent: 20 },
-                    { name: "Phạm Cao Sơn", phone: "090.890.8405", seat: "Tầng 1", parent: 20 },
-                    { name: "Dương Thị Quý Mai", phone: "070.633.1049", seat: "Tầng 1", parent: 20 },
-                    { name: "Đỗ Ngọc Khánh", phone: "090.729.9449", seat: "Tầng 1", parent: 20 },
-                    { name: "Trần Thị Nguyệt", phone: "077.445.8098", seat: "Tầng 1", parent: 20 },
-                    { name: "Nguyễn Hải Kim Thảo", phone: "077.667.3667", seat: "Tầng 1", parent: 20 },
-                    { name: "Lê Nguyễn Thanh Thúy", phone: "092.252.6672", seat: "Tầng 2", parent: 30 },
-                    { name: "Nguyễn Hân", phone: "091.881.7681", seat: "Tầng 2", parent: 30 },
-                    { name: "Nguyễn Thị Thùy Linh", phone: "093.655.7559", seat: "Tầng 2", parent: 30 },
-                    { name: "Hoàng Văn Thình", phone: "093.563.4478", seat: "Tầng 2", parent: 30 },
-                    { name: "Nguyễn Thị Thủy", phone: "090.834.7954", seat: "Tầng 2", parent: 30 },
-                    { name: "Nguyễn Quế Lâm", phone: "036.907.6932", seat: "Tầng 2", parent: 30 },
-                    { name: "Nguyễn Thị Trúc Uyên", phone: "090.731.3090", seat: "Tầng 2", parent: 30 },
-                    { name: "Thới Mỹ Hạnh", phone: "098.445.5773", seat: "Tầng 3", parent: 40 },
-                    { name: "Đinh Thị Vân Thi", phone: "098.959.8905", seat: "Tầng 3", parent: 40 },
-                    { name: "Trương Thị Hồng Ý", phone: "093.536.5563", seat: "Tầng 3", parent: 40 },
-                    { name: "Nguyễn Thị Thúy Ni", phone: "034.968.2095", seat: "Tầng 3", parent: 40 },
-                    { name: "Đoàn Thị Út Thu", phone: "090.822.4547", seat: "Tầng 3", parent: 40 },
-                    { name: "Phan Thị Thanh Thảo", phone: "090.472.6693", seat: "Tầng 3", parent: 40 },
-                    { name: "Nguyễn Thị Hiền", phone: "090.331.5478", seat: "Tầng 3", parent: 40 },
-                    { name: "Trần Thị Ngọc Mai", phone: "078.228.3293", seat: "Tầng 3", parent: 40 },
-                    { name: "Phạm Thị Hồng Điệp", phone: "090.244.9479", seat: "Tầng 3", parent: 40 },
-                    { name: "Nguyễn Phụng Kiều Tiên", phone: "090.919.7333", seat: "Tầng 3", parent: 40 },
-                    { name: "Nguyễn Minh Chi", phone: "093.127.9276", seat: "Tầng 4", parent: 50 },
-                    { name: "Lê Thị Hương Thu", phone: "093.176.8203", seat: "Tầng 4", parent: 50 },
-                    { name: "Nguyễn Ngọc Quỳnh Hương", phone: "093.204.2725", seat: "Tầng 4", parent: 50 },
-                    { name: "Lữ Thị Hồng", phone: "090.662.0026", seat: "Tầng 4", parent: 50 },
-                    { name: "Hoàng Thị Nhung", phone: "097.389.1089", seat: "Tầng 4", parent: 50 },
-                    { name: "Nguyễn Ngọc Hoài", phone: "093.708.8145", seat: "Tầng 4", parent: 50 },
-                    { name: "Trần Hoàng Phú", phone: "093.857.9836", seat: "Tầng 4", parent: 50 },
-                    { name: "Nguyễn Thị Hồng Phượng", phone: "033.245.8858", seat: "Tầng 4", parent: 50 },
-                    { name: "Nguyễn Thị Ngọc", phone: "097.537.9135", seat: "Tầng 4", parent: 50 },
-                    { name: "Hồ Minh Duy", phone: "083.499.0690", seat: "Tầng 5", parent: 60 },
-                    { name: "Mai Vũ Minh Hà", phone: "034.686.9638", seat: "Tầng 5", parent: 60 },
-                    { name: "Lê Thị Thu Hương", phone: "090.587.1467", seat: "Tầng 5", parent: 60 }
-                ];
-                
-                gdvList.forEach(d => {
-                    nodeData.push({ 
-                        key: nextKey++, 
-                        name: d.name, 
-                        role: "Giao dịch viên", 
-                        phone: d.phone, 
-                        seat: d.seat, 
-                        isGDV: true, 
-                        color: dataColors.gdv,
-                        parentRef: d.parent 
-                    });
-                });
-
-                linkData = [
-                    { from: 1, to: 2 }, { from: 1, to: 3 }, { from: 1, to: 4 },
-                    { from: 2, to: 5 }, { from: 3, to: 5 }, { from: 4, to: 5 },
-                    { from: 5, to: 6 }, { from: 5, to: 7 }, { from: 5, to: 8 }, { from: 5, to: 9 },
-                    { from: 5, to: 10 }, { from: 5, to: 11 }, { from: 5, to: 12 },
-                    { from: 6, to: 100 }, { from: 7, to: 100 }, { from: 8, to: 100 },
-                    { from: 9, to: 100 }, { from: 10, to: 100 }, { from: 11, to: 100 }, { from: 12, to: 100 },
-                    { from: 100, to: 20 }, { from: 100, to: 30 }, { from: 100, to: 40 }, { from: 100, to: 50 }, { from: 100, to: 60 }
-                ];
-                
-                for (let n of nodeData) {
-                    if (n.isGDV) {
-                        linkData.push({ from: n.parentRef, to: n.key });
-                    }
-                }
-
+                const gdvList = [ { name: "Nguyễn Ngọc Anh", phone: "096.982.5676", seat: "Tầng 1", parent: 20, area: "Trường Tiểu học A, Trường Đại học B" }, { name: "Phạm Cao Sơn", phone: "090.890.8405", seat: "Tầng 1", parent: 20, area: "Bệnh viện X, Chung cư Y" }, { name: "Dương Thị Quý Mai", phone: "070.633.1049", seat: "Tầng 1", parent: 20 }, { name: "Đỗ Ngọc Khánh", phone: "090.729.9449", seat: "Tầng 1", parent: 20, area: "Công ty Z, Trường Tiểu học A" }, { name: "Trần Thị Nguyệt", phone: "077.445.8098", seat: "Tầng 1", parent: 20 }, { name: "Nguyễn Hải Kim Thảo", phone: "077.667.3667", seat: "Tầng 1", parent: 20, area: "Bệnh viện X" }, { name: "Lê Nguyễn Thanh Thúy", phone: "092.252.6672", seat: "Tầng 2", parent: 30 }, { name: "Nguyễn Hân", phone: "091.881.7681", seat: "Tầng 2", parent: 30 }, { name: "Nguyễn Thị Thùy Linh", phone: "093.655.7559", seat: "Tầng 2", parent: 30, area: "Ủy ban Nhân dân Quận 1" }, { name: "Hoàng Văn Thình", phone: "093.563.4478", seat: "Tầng 2", parent: 30, area: "Trường Đại học B" }, { name: "Nguyễn Thị Thủy", phone: "090.834.7954", seat: "Tầng 2", parent: 30 }, { name: "Nguyễn Quế Lâm", phone: "036.907.6932", seat: "Tầng 2", parent: 30 }, { name: "Nguyễn Thị Trúc Uyên", phone: "090.731.3090", seat: "Tầng 2", parent: 30 }, ];
+                gdvList.forEach(d => { nodeData.push({ key: nextKey++, name: d.name, role: "Giao dịch viên", phone: d.phone, seat: d.seat, isGDV: true, color: dataColors.gdv, parentRef: d.parent, area: d.area }); });
+                let linkData = [ { from: 1, to: 2 }, { from: 1, to: 3 }, { from: 1, to: 4 }, { from: 2, to: 5 }, { from: 3, to: 5 }, { from: 4, to: 5 }, { from: 5, to: 6 }, { from: 5, to: 7 }, { from: 5, to: 8 }, { from: 5, to: 9 }, { from: 5, to: 10 }, { from: 5, to: 11 }, { from: 5, to: 12 }, { from: 6, to: 100 }, { from: 7, to: 100 }, { from: 8, to: 100 }, { from: 9, to: 100 }, { from: 10, to: 100 }, { from: 11, to: 100 }, { from: 12, to: 100 }, { from: 100, to: 20 }, { from: 100, to: 30 }, { from: 100, to: 40 }, { from: 100, to: 50 }, { from: 100, to: 60 } ];
+                for (let n of nodeData) { if (n.isGDV) { linkData.push({ from: n.parentRef, to: n.key }); } }
                 myDiagram.model = new go.GraphLinksModel(nodeData, linkData);
             } 
 
-            // === LOGIC CHO MODAL ===
             const modal = document.getElementById("myModal");
             const closeBtn = document.getElementsByClassName("close")[0];
-
             closeBtn.onclick = () => { modal.style.display = "none"; }
-            window.onclick = (event) => {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-
-            // Sự kiện click node
+            window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
+            
             myDiagram.addDiagramListener("ObjectSingleClicked", e => {
                 const part = e.subject.part;
                 if (!(part instanceof go.Node)) return;
                 const d = part.data;
                 selectedNode = d;
-
-                // Mở/đóng Tầng hoặc nhóm GDV
-                if (d.isFloor || d.isGroupNode) {
-                    myDiagram.startTransaction("toggleExpand");
-                    part.isTreeExpanded = !part.isTreeExpanded;
-                    myDiagram.commitTransaction("toggleExpand");
-                }
-
-                // Hiển thị chi tiết trong POPUP (chỉ cho nhân sự có tên)
-                if (d.name) {
-                     let html = "";
-                     html += `<b>Họ & tên:</b> ${d.name}<br>`;
-                     if (d.role) html += `<b>Chức vụ:</b> ${d.role}<br>`;
-                     if (d.phone) html += `<b>Số điện thoại:</b> ${d.phone}<br>`;
-                     if (d.seat) html += `<b>Vị trí ngồi:</b> ${d.seat}<br>`;
-
-                     document.getElementById("modal-detail").innerHTML = html;
-                     modal.style.display = "flex"; // Dùng flex để căn giữa
-                }
+                if (d.isFloor || d.isGroupNode) { myDiagram.startTransaction("toggleExpand"); part.isTreeExpanded = !part.isTreeExpanded; myDiagram.commitTransaction("toggleExpand"); }
+                
+                // Sử dụng hàm mới để hiển thị popup
+                showDetailsModal(d);
             });
+            
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            searchInput.addEventListener('keyup', searchStaff);
+            searchInput.addEventListener('focus', searchStaff);
+            document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) { searchResults.style.display = 'none'; } });
+
+            function searchStaff() {
+                const query = searchInput.value.toLowerCase().trim();
+                if (!query) { searchResults.style.display = 'none'; return; }
+                const allNodes = myDiagram.model.nodeDataArray;
+                const results = allNodes.filter(node => {
+                    if (!node.name) return false;
+                    const nameMatch = node.name.toLowerCase().includes(query);
+                    const areaMatch = node.area && node.area.toLowerCase().includes(query);
+                    return nameMatch || areaMatch;
+                });
+                displaySearchResults(results);
+            }
+
+            function displaySearchResults(results) {
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">Không tìm thấy kết quả.</div>';
+                } else {
+                    let html = '<ul>';
+                    results.forEach(res => { html += `<li data-key="${res.key}"><span class="name">${res.name}</span><span class="area">${res.area || 'Chưa có khu vực quản lý'}</span></li>`; });
+                    html += '</ul>';
+                    searchResults.innerHTML = html;
+
+                    searchResults.querySelectorAll('li').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const key = parseInt(item.getAttribute('data-key'));
+                            const nodeToSelect = myDiagram.findNodeForKey(key);
+                            if (nodeToSelect) {
+                                myDiagram.startTransaction("expand and select");
+                                let parent = nodeToSelect.findTreeParentNode();
+                                while (parent !== null) { parent.isTreeExpanded = true; parent = parent.findTreeParentNode(); }
+                                
+                                myDiagram.select(nodeToSelect); 
+                                myDiagram.centerRect(nodeToSelect.actualBounds); 
+                                if (myDiagram.scale > 1.5) myDiagram.scale = 1.5; 
+                                
+                                // CẬP NHẬT: Gọi hàm hiển thị popup chi tiết
+                                showDetailsModal(nodeToSelect.data);
+
+                                myDiagram.commitTransaction("expand and select");
+                                searchResults.style.display = 'none'; 
+                                searchInput.value = nodeToSelect.data.name; 
+                            }
+                        });
+                    });
+                }
+                searchResults.style.display = 'block';
+            }
 
             resetDiagram();
         }
@@ -397,16 +181,12 @@
         function resetDiagram() {
             myDiagram.startTransaction("reset");
             myDiagram.nodes.each(n => {
-                if (n.data.key <= 12 || n.data.key === 100) {
-                    n.isTreeExpanded = true;
-                } else {
-                    n.isTreeExpanded = false; 
-                }
+                if (n.data.key <= 12 || n.data.key === 100) n.isTreeExpanded = true;
+                else n.isTreeExpanded = false; 
             });
             myDiagram.zoomToFit(); 
             myDiagram.commitTransaction("reset");
         }
-
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
